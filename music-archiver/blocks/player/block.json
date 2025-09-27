@@ -1,0 +1,13 @@
+{
+  "apiVersion": 2,
+  "name": "music-archiver/player",
+  "title": "Music Archiver Player",
+  "category": "widgets",
+  "icon": "controls-play",
+  "textdomain": "music-archiver",
+  "attributes": {
+    "source": { "type": "string", "default": "" }
+  },
+  "editorScript": "music-archiver-player-editor",
+  "style": "music-archiver"
+}

@@ -1,2 +1,2 @@
 # AJDWP-Musicgram
-A wordpress music app that lets use save and archive their musics by link or by connecting to their own Google Drive.
+A wordpress music app that let users save and archive their desired musics by a single link or with getting connected to their own Google Drive.

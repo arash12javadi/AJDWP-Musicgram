@@ -1,0 +1,118 @@
+<?php
+namespace MA;
+
+defined( 'ABSPATH' ) || exit;
+
+class Player {
+    public static function register_shortcodes(): void {
+        add_shortcode( 'ma_album_list', [ self::class, 'shortcode_album_list' ] );
+        add_shortcode( 'ma_playlist', [ self::class, 'shortcode_playlist' ] );
+        add_shortcode( 'ma_player', [ self::class, 'shortcode_player' ] );
+        add_shortcode( 'ma_ratings', [ self::class, 'shortcode_ratings' ] );
+        add_shortcode( 'ma_favourites', [ self::class, 'shortcode_favourites' ] );
+    }
+
+    public static function register_assets(): void {
+        wp_register_style( 'music-archiver', MA_URL . 'public/css/music-archiver.css', [], MA_VERSION );
+        wp_register_script( 'ma-player', MA_URL . 'public/js/player.js', [ 'wp-api-fetch' ], MA_VERSION, true );
+        wp_register_script( 'ma-rating', MA_URL . 'public/js/rating.js', [ 'wp-api-fetch' ], MA_VERSION, true );
+        wp_register_script( 'ma-favourite', MA_URL . 'public/js/favourite.js', [ 'wp-api-fetch' ], MA_VERSION, true );
+        wp_register_script( 'ma-playlist', MA_URL . 'public/js/playlist.js', [ 'wp-api-fetch' ], MA_VERSION, true );
+        wp_register_script( 'ma-search', MA_URL . 'public/js/search.js', [ 'wp-api-fetch' ], MA_VERSION, true );
+
+        wp_register_script( 'music-archiver-album-list-editor', MA_URL . 'blocks/album-list/edit.js', [ 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor' ], MA_VERSION, true );
+        wp_register_script( 'music-archiver-playlist-editor', MA_URL . 'blocks/playlist/edit.js', [ 'wp-blocks', 'wp-element', 'wp-i18n' ], MA_VERSION, true );
+        wp_register_script( 'music-archiver-player-editor', MA_URL . 'blocks/player/edit.js', [ 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor' ], MA_VERSION, true );
+    }
+
+    public static function enqueue_public_assets(): void {
+        if ( ! is_singular() && ! has_block( 'music-archiver/player' ) && ! has_shortcode( get_post_field( 'post_content', get_the_ID() ), 'ma_player' ) ) {
+            return;
+        }
+
+        wp_enqueue_style( 'music-archiver' );
+        wp_enqueue_script( 'ma-player' );
+        wp_enqueue_script( 'ma-rating' );
+        wp_enqueue_script( 'ma-favourite' );
+        wp_enqueue_script( 'ma-playlist' );
+        wp_enqueue_script( 'ma-search' );
+
+        wp_localize_script( 'ma-player', 'MAPlayer', [
+            'restUrl' => esc_url_raw( rest_url( 'ma/v1/' ) ),
+            'nonce'   => wp_create_nonce( 'wp_rest' ),
+            'autoplay'=> (bool) get_settings()['player_autoplay'],
+            'shuffle' => (bool) get_settings()['player_shuffle'],
+        ] );
+    }
+
+    public static function enqueue_block_editor_assets(): void {
+        wp_enqueue_style( 'music-archiver' );
+    }
+
+    public static function shortcode_album_list( $atts ): string {
+        $atts = shortcode_atts( [
+            'user'   => 'me',
+            'public' => '0',
+        ], $atts, 'ma_album_list' );
+
+        ob_start();
+        $template = MA_PATH . 'templates/album-card.php';
+        if ( file_exists( $template ) ) {
+            $user_id = 'me' === $atts['user'] ? get_current_user_id() : (int) $atts['user'];
+            global $wpdb;
+            $query = "SELECT * FROM {$wpdb->prefix}ma_albums WHERE user_id = %d";
+            $public = (int) $atts['public'];
+            if ( $public ) {
+                $query .= ' AND is_public = 1';
+            }
+            $albums = $wpdb->get_results( $wpdb->prepare( $query, $user_id ), ARRAY_A );
+            include $template;
+        }
+
+        return ob_get_clean();
+    }
+
+    public static function shortcode_playlist(): string {
+        ob_start();
+        $template = MA_PATH . 'templates/playlist.php';
+        if ( file_exists( $template ) ) {
+            include $template;
+        }
+        return ob_get_clean();
+    }
+
+    public static function shortcode_player( $atts ): string {
+        $atts = shortcode_atts( [ 'source' => '' ], $atts, 'ma_player' );
+        ob_start();
+        $template = MA_PATH . 'templates/player.php';
+        if ( file_exists( $template ) ) {
+            $source = $atts['source'];
+            include $template;
+        }
+        return ob_get_clean();
+    }
+
+    public static function shortcode_ratings( $atts ): string {
+        $atts = shortcode_atts( [ 'object' => 'album', 'id' => 0 ], $atts, 'ma_ratings' );
+        ob_start();
+        $template = MA_PATH . 'templates/ratings.php';
+        if ( file_exists( $template ) ) {
+            $object = $atts['object'];
+            $id     = (int) $atts['id'];
+            include $template;
+        }
+        return ob_get_clean();
+    }
+
+    public static function shortcode_favourites( $atts ): string {
+        $atts = shortcode_atts( [ 'object' => 'album', 'id' => 0 ], $atts, 'ma_favourites' );
+        ob_start();
+        $template = MA_PATH . 'templates/favourites.php';
+        if ( file_exists( $template ) ) {
+            $object = $atts['object'];
+            $id     = (int) $atts['id'];
+            include $template;
+        }
+        return ob_get_clean();
+    }
+}

@@ -75,3 +75,90 @@
     overflow-y: auto;
     z-index: 1000;
 }
+
+.ma-album-card-wrapper {
+    margin-block: 1.5rem;
+}
+
+.ma-album-card-form {
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: #f9f9f9;
+}
+
+.ma-album-card-form fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.ma-album-card-form__legend {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.ma-album-card-form__row {
+    margin-bottom: 1rem;
+}
+
+.ma-album-card-form__input,
+.ma-album-card-form__textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font: inherit;
+}
+
+.ma-album-card-form__textarea {
+    resize: vertical;
+}
+
+.ma-album-card-form__checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ma-album-card-form__actions {
+    margin-top: 1rem;
+}
+
+.ma-album-card-form__submit {
+    background: #0073aa;
+    color: #fff;
+    border: 0;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.ma-album-card-form.is-loading .ma-album-card-form__submit {
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.ma-album-card-form__feedback {
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.ma-album-card-form__feedback.is-error {
+    color: #b71c1c;
+}
+
+.ma-album-card-form__feedback.is-success {
+    color: #007a3d;
+}
+
+.ma-album-card__login {
+    margin-bottom: 1rem;
+}
+
+.ma-album-card-list {
+    display: grid;
+    gap: 1rem;
+}

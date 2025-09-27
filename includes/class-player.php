@@ -19,6 +19,11 @@ class Player {
         wp_register_script( 'ma-favourite', MA_URL . 'public/js/favourite.js', [ 'wp-api-fetch' ], MA_VERSION, true );
         wp_register_script( 'ma-playlist', MA_URL . 'public/js/playlist.js', [ 'wp-api-fetch' ], MA_VERSION, true );
         wp_register_script( 'ma-search', MA_URL . 'public/js/search.js', [ 'wp-api-fetch' ], MA_VERSION, true );
+        wp_register_script( 'ma-albums', MA_URL . 'public/js/albums.js', [ 'wp-api-fetch', 'wp-i18n' ], MA_VERSION, true );
+
+        if ( function_exists( 'wp_set_script_translations' ) ) {
+            wp_set_script_translations( 'ma-albums', 'music-archiver', MA_PATH . 'languages' );
+        }
 
         wp_register_script( 'music-archiver-album-list-editor', MA_URL . 'blocks/album-list/edit.js', [ 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-components', 'wp-block-editor' ], MA_VERSION, true );
         wp_register_script( 'music-archiver-playlist-editor', MA_URL . 'blocks/playlist/edit.js', [ 'wp-blocks', 'wp-element', 'wp-i18n' ], MA_VERSION, true );
@@ -26,7 +31,32 @@ class Player {
     }
 
     public static function enqueue_public_assets(): void {
-        if ( ! is_singular() && ! has_block( 'music-archiver/player' ) && ! has_shortcode( get_post_field( 'post_content', get_the_ID() ), 'ma_player' ) ) {
+        $post    = get_post();
+        $content = $post ? $post->post_content : '';
+
+        $shortcodes = [ 'ma_player', 'ma_album_list', 'ma_playlist', 'ma_ratings', 'ma_favourites' ];
+        $has_shortcode = false;
+        if ( $content ) {
+            foreach ( $shortcodes as $shortcode ) {
+                if ( has_shortcode( $content, $shortcode ) ) {
+                    $has_shortcode = true;
+                    break;
+                }
+            }
+        }
+
+        $blocks      = [ 'music-archiver/player', 'music-archiver/playlist', 'music-archiver/album-list' ];
+        $has_block   = false;
+        if ( function_exists( 'has_block' ) && $post ) {
+            foreach ( $blocks as $block ) {
+                if ( has_block( $block, $post ) ) {
+                    $has_block = true;
+                    break;
+                }
+            }
+        }
+
+        if ( ! $has_shortcode && ! $has_block ) {
             return;
         }
 
@@ -36,6 +66,7 @@ class Player {
         wp_enqueue_script( 'ma-favourite' );
         wp_enqueue_script( 'ma-playlist' );
         wp_enqueue_script( 'ma-search' );
+        wp_enqueue_script( 'ma-albums' );
 
         wp_localize_script( 'ma-player', 'MAPlayer', [
             'restUrl' => esc_url_raw( rest_url( 'ma/v1/' ) ),
@@ -58,11 +89,16 @@ class Player {
         ob_start();
         $template = MA_PATH . 'templates/album-card.php';
         if ( file_exists( $template ) ) {
-            $user_id = 'me' === $atts['user'] ? get_current_user_id() : (int) $atts['user'];
+            $requested_self   = 'me' === $atts['user'];
+            $user_id          = $requested_self ? get_current_user_id() : (int) $atts['user'];
+            $public           = (int) $atts['public'];
+            $current_user     = get_current_user_id();
+            $can_manage       = is_user_logged_in() && ( $requested_self || (int) $user_id === $current_user || current_user_can( 'ma_manage' ) );
+            $show_login_prompt = ! is_user_logged_in() && $requested_self;
+
             global $wpdb;
             $query = "SELECT * FROM {$wpdb->prefix}ma_albums WHERE user_id = %d";
-            $public = (int) $atts['public'];
-            if ( $public ) {
+            if ( $public || ( ! $can_manage && $user_id ) ) {
                 $query .= ' AND is_public = 1';
             }
             $albums = $wpdb->get_results( $wpdb->prepare( $query, $user_id ), ARRAY_A );

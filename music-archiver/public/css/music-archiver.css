@@ -1,0 +1,77 @@
+.ma-player,
+.ma-playlist,
+.ma-album-card,
+.ma-ratings,
+.ma-favourites {
+    font-family: inherit;
+    color: var(--ma-text, #111);
+}
+
+.ma-player {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.ma-player button,
+.ma-player input,
+.ma-player select {
+    font: inherit;
+}
+
+.ma-player button:focus,
+.ma-player input:focus,
+.ma-player select:focus,
+.ma-playlist button:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+.ma-playlist__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ma-playlist__item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.ma-rating__stars button {
+    background: none;
+    border: 0;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.ma-rating__stars button[aria-pressed="true"] {
+    color: #ffb300;
+}
+
+.ma-favourite__toggle {
+    background: none;
+    border: 0;
+    color: #e0245e;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.ma-search-overlay {
+    position: relative;
+}
+
+.ma-search-overlay__results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}

@@ -1,0 +1,14 @@
+{
+  "apiVersion": 2,
+  "name": "music-archiver/album-list",
+  "title": "Music Archiver Album List",
+  "category": "widgets",
+  "icon": "album",
+  "textdomain": "music-archiver",
+  "attributes": {
+    "user": { "type": "string", "default": "me" },
+    "public": { "type": "boolean", "default": false }
+  },
+  "editorScript": "music-archiver-album-list-editor",
+  "style": "music-archiver"
+}

@@ -1,0 +1,10 @@
+{
+  "apiVersion": 2,
+  "name": "music-archiver/playlist",
+  "title": "Music Archiver Playlist",
+  "category": "widgets",
+  "icon": "playlist-audio",
+  "textdomain": "music-archiver",
+  "editorScript": "music-archiver-playlist-editor",
+  "style": "music-archiver"
+}

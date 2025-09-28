@@ -38,14 +38,23 @@
             return;
         }
 
+        const playLabel = __( 'Play', 'music-archiver' );
+        const addLabel = __( 'Add to playlist', 'music-archiver' );
+        const openLabel = __( 'Open original', 'music-archiver' );
+
         const html = [
             '<ol class="ma-album-card__tracks-list">',
             items.map( ( track ) => {
-                const title = escapeHtml( track.title || '' );
-                const link = track.source_url
-                    ? '<a class="ma-album-card__tracks-link" href="' + escapeHtml( track.source_url ) + '" target="_blank" rel="noopener">' + escapeHtml( __( 'Open', 'music-archiver' ) ) + '</a>'
-                    : '';
-                return '<li class="ma-album-card__tracks-item"><span class="ma-album-card__tracks-title">' + title + '</span>' + link + '</li>';
+                const id = track.id != null ? track.id : '';
+                const title = escapeHtml( track.title ? track.title : __( 'Untitled track', 'music-archiver' ) );
+                const sourceUrl = track.source_url ? String( track.source_url ) : '';
+                const canPlay = !! sourceUrl;
+                const safeId = escapeHtml( String( id ) );
+                const playAttrs = canPlay ? ' data-ma-player-load="track:' + safeId + '"' : ' disabled';
+                const playButton = '<button type="button" class="ma-album-card__tracks-play"' + playAttrs + '>' + escapeHtml( playLabel ) + '</button>';
+                const addButton = '<button type="button" class="ma-album-card__tracks-add" data-ma-playlist-add="' + safeId + '">' + escapeHtml( addLabel ) + '</button>';
+                const openLink = sourceUrl ? '<a class="ma-album-card__tracks-link" href="' + escapeHtml( sourceUrl ) + '" target="_blank" rel="noopener">' + escapeHtml( openLabel ) + '</a>' : '';
+                return '<li class="ma-album-card__tracks-item" data-ma-track-id="' + safeId + '"><span class="ma-album-card__tracks-title">' + title + '</span><div class="ma-album-card__tracks-actions">' + playButton + addButton + openLink + '</div></li>';
             } ).join( '' ),
             '</ol>'
         ].join( '' );

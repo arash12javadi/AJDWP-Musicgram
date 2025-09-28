@@ -52,6 +52,14 @@ class Rest {
             ],
         ] );
 
+        register_rest_route( $namespace, '/tracks', [
+            'methods'             => 'GET',
+            'callback'            => [ self::class, 'get_tracks' ],
+            'permission_callback' => function () {
+                return is_user_logged_in();
+            },
+        ] );
+
         register_rest_route( $namespace, '/albums/(?P<id>\d+)/order', [
             'methods'             => 'PATCH',
             'callback'            => [ self::class, 'update_album_order' ],
@@ -220,6 +228,26 @@ class Rest {
         }
 
         $tracks = $wpdb->get_results( $wpdb->prepare( "SELECT t.*, at.position, at.id AS album_track_id FROM {$wpdb->prefix}ma_album_track at JOIN {$wpdb->prefix}ma_tracks t ON t.id = at.track_id WHERE at.album_id = %d ORDER BY at.position ASC", $album_id ), ARRAY_A );
+
+        return rest_success( [ 'tracks' => $tracks ] );
+    }
+
+    public static function get_tracks( \WP_REST_Request $request ) {
+        global $wpdb;
+
+        $user_param = $request->get_param( 'user' );
+        $user_id    = ( 'me' === $user_param || null === $user_param || '' === $user_param ) ? get_current_user_id() : (int) $user_param;
+        $current    = get_current_user_id();
+
+        if ( ! $user_id ) {
+            return rest_success( [ 'tracks' => [] ] );
+        }
+
+        if ( $user_id !== $current && ! current_user_can( 'ma_manage' ) ) {
+            return rest_error( __( 'You are not allowed to view these tracks.', 'music-archiver' ), 403 );
+        }
+
+        $tracks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ma_tracks WHERE user_id = %d ORDER BY created_at DESC", $user_id ), ARRAY_A );
 
         return rest_success( [ 'tracks' => $tracks ] );
     }

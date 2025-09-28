@@ -6,6 +6,7 @@ defined( 'ABSPATH' ) || exit;
 class Player {
     public static function register_shortcodes(): void {
         add_shortcode( 'ma_album_list', [ self::class, 'shortcode_album_list' ] );
+        add_shortcode( 'ma_track_list', [ self::class, 'shortcode_track_list' ] );
         add_shortcode( 'ma_playlist', [ self::class, 'shortcode_playlist' ] );
         add_shortcode( 'ma_player', [ self::class, 'shortcode_player' ] );
         add_shortcode( 'ma_ratings', [ self::class, 'shortcode_ratings' ] );
@@ -34,7 +35,7 @@ class Player {
         $post    = get_post();
         $content = $post ? $post->post_content : '';
 
-        $shortcodes = [ 'ma_player', 'ma_album_list', 'ma_playlist', 'ma_ratings', 'ma_favourites' ];
+        $shortcodes = [ 'ma_player', 'ma_album_list', 'ma_track_list', 'ma_playlist', 'ma_ratings', 'ma_favourites' ];
         $has_shortcode = false;
         if ( $content ) {
             foreach ( $shortcodes as $shortcode ) {
@@ -45,7 +46,7 @@ class Player {
             }
         }
 
-        $blocks      = [ 'music-archiver/player', 'music-archiver/playlist', 'music-archiver/album-list' ];
+        $blocks      = [ 'music-archiver/player', 'music-archiver/playlist', 'music-archiver/album-list', 'music-archiver/track-list' ];
         $has_block   = false;
         if ( function_exists( 'has_block' ) && $post ) {
             foreach ( $blocks as $block ) {
@@ -121,6 +122,32 @@ class Player {
 
             if ( $can_manage ) {
                 self::ensure_media_enqueued();
+            }
+
+            include $template;
+        }
+
+        return ob_get_clean();
+    }
+
+    public static function shortcode_track_list( $atts ): string {
+        $atts = shortcode_atts( [
+            'user' => 'me',
+        ], $atts, 'ma_track_list' );
+
+        ob_start();
+        $template = MA_PATH . 'templates/track-card.php';
+        if ( file_exists( $template ) ) {
+            $requested_self    = 'me' === $atts['user'];
+            $user_id           = $requested_self ? get_current_user_id() : (int) $atts['user'];
+            $current_user      = get_current_user_id();
+            $can_manage        = is_user_logged_in() && ( $requested_self || (int) $user_id === $current_user || current_user_can( 'ma_manage' ) );
+            $show_login_prompt = ! is_user_logged_in() && $requested_self;
+
+            $tracks = [];
+            if ( $user_id && ( $can_manage || current_user_can( 'ma_manage' ) ) ) {
+                global $wpdb;
+                $tracks = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ma_tracks WHERE user_id = %d ORDER BY created_at DESC", $user_id ), ARRAY_A );
             }
 
             include $template;

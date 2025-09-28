@@ -65,14 +65,27 @@
                             <p class="ma-album-card__tracks-empty"><?php esc_html_e( 'No tracks yet.', 'music-archiver' ); ?></p>
                         <?php else : ?>
                             <ol class="ma-album-card__tracks-list">
-                                <?php foreach ( $album_tracks as $track ) : ?>
-                                    <li class="ma-album-card__tracks-item">
-                                        <span class="ma-album-card__tracks-title"><?php echo esc_html( $track['title'] ); ?></span>
-                                        <?php if ( ! empty( $track['source_url'] ) ) : ?>
-                                            <a href="<?php echo esc_url( $track['source_url'] ); ?>" class="ma-album-card__tracks-link" target="_blank" rel="noopener">
-                                                <?php esc_html_e( 'Open', 'music-archiver' ); ?>
-                                            </a>
-                                        <?php endif; ?>
+                                <?php foreach ( $album_tracks as $track ) :
+                                    $track_id   = (int) $track['id'];
+                                    $track_title = ! empty( $track['title'] ) ? $track['title'] : __( 'Untitled track', 'music-archiver' );
+                                    $source_url = ! empty( $track['source_url'] ) ? $track['source_url'] : '';
+                                    $can_play   = ! empty( $source_url );
+                                ?>
+                                    <li class="ma-album-card__tracks-item" data-ma-track-id="<?php echo esc_attr( $track_id ); ?>">
+                                        <span class="ma-album-card__tracks-title"><?php echo esc_html( $track_title ); ?></span>
+                                        <div class="ma-album-card__tracks-actions">
+                                            <button type="button" class="ma-album-card__tracks-play" <?php echo $can_play ? 'data-ma-player-load="track:' . esc_attr( $track_id ) . '"' : 'disabled'; ?>>
+                                                <?php esc_html_e( 'Play', 'music-archiver' ); ?>
+                                            </button>
+                                            <button type="button" class="ma-album-card__tracks-add" data-ma-playlist-add="<?php echo esc_attr( $track_id ); ?>">
+                                                <?php esc_html_e( 'Add to playlist', 'music-archiver' ); ?>
+                                            </button>
+                                            <?php if ( $source_url ) : ?>
+                                                <a href="<?php echo esc_url( $source_url ); ?>" class="ma-album-card__tracks-link" target="_blank" rel="noopener">
+                                                    <?php esc_html_e( 'Open original', 'music-archiver' ); ?>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
                                     </li>
                                 <?php endforeach; ?>
                             </ol>

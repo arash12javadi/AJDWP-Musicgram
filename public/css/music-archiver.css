@@ -397,3 +397,113 @@
 .ma-playlist__item.is-dragging {
     opacity: 0.6;
 }
+
+.ma-album-card__tracks-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.ma-album-card__tracks-play,
+.ma-album-card__tracks-add {
+    background: #1d2327;
+    color: #fff;
+    border: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.ma-album-card__tracks-add {
+    background: #0073aa;
+}
+
+.ma-album-card__tracks-play[disabled],
+.ma-album-card__tracks-add[disabled] {
+    background: #c3c4c7;
+    color: #6c6c6c;
+    cursor: not-allowed;
+}
+
+.ma-track-grid {
+    margin-block: 1.5rem;
+}
+
+.ma-track-grid__empty,
+.ma-track-grid__login {
+    margin: 0;
+    color: #555;
+}
+
+.ma-track-grid__list {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .ma-track-grid__list {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+.ma-track-card {
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ma-track-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.ma-track-card__play {
+    background: #1d2327;
+    color: #fff;
+    border: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.ma-track-card__play[disabled] {
+    background: #c3c4c7;
+    color: #6c6c6c;
+    cursor: not-allowed;
+}
+
+.ma-track-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ma-track-card__add {
+    background: #0073aa;
+    color: #fff;
+    border: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.ma-track-card__add[disabled] {
+    background: #c3c4c7;
+    color: #6c6c6c;
+    cursor: not-allowed;
+}
+
+.ma-track-card__open {
+    font-size: 0.875rem;
+}

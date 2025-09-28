@@ -89,11 +89,11 @@ class Player {
         ob_start();
         $template = MA_PATH . 'templates/album-card.php';
         if ( file_exists( $template ) ) {
-            $requested_self   = 'me' === $atts['user'];
-            $user_id          = $requested_self ? get_current_user_id() : (int) $atts['user'];
-            $public           = (int) $atts['public'];
-            $current_user     = get_current_user_id();
-            $can_manage       = is_user_logged_in() && ( $requested_self || (int) $user_id === $current_user || current_user_can( 'ma_manage' ) );
+            $requested_self    = 'me' === $atts['user'];
+            $user_id           = $requested_self ? get_current_user_id() : (int) $atts['user'];
+            $public            = (int) $atts['public'];
+            $current_user      = get_current_user_id();
+            $can_manage        = is_user_logged_in() && ( $requested_self || (int) $user_id === $current_user || current_user_can( 'ma_manage' ) );
             $show_login_prompt = ! is_user_logged_in() && $requested_self;
 
             global $wpdb;
@@ -102,6 +102,27 @@ class Player {
                 $query .= ' AND is_public = 1';
             }
             $albums = $wpdb->get_results( $wpdb->prepare( $query, $user_id ), ARRAY_A );
+
+            $tracks_by_album = [];
+            if ( $albums ) {
+                $album_ids = array_filter( array_map( 'absint', wp_list_pluck( $albums, 'id' ) ) );
+                if ( $album_ids ) {
+                    $in = implode( ',', $album_ids );
+                    $rows = $wpdb->get_results( "SELECT at.album_id, at.id AS album_track_id, at.position, t.* FROM {$wpdb->prefix}ma_album_track at JOIN {$wpdb->prefix}ma_tracks t ON t.id = at.track_id WHERE at.album_id IN ( {$in} ) ORDER BY at.album_id, at.position", ARRAY_A );
+                    foreach ( $rows as $row ) {
+                        $album_id_key = (int) $row['album_id'];
+                        if ( ! isset( $tracks_by_album[ $album_id_key ] ) ) {
+                            $tracks_by_album[ $album_id_key ] = [];
+                        }
+                        $tracks_by_album[ $album_id_key ][] = $row;
+                    }
+                }
+            }
+
+            if ( $can_manage ) {
+                self::ensure_media_enqueued();
+            }
+
             include $template;
         }
 
@@ -151,4 +172,18 @@ class Player {
         }
         return ob_get_clean();
     }
+
+    private static function ensure_media_enqueued(): void {
+        static $enqueued = false;
+        if ( $enqueued ) {
+            return;
+        }
+
+        if ( function_exists( 'wp_enqueue_media' ) ) {
+            wp_enqueue_media();
+        }
+
+        $enqueued = true;
+    }
 }
+

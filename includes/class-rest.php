@@ -207,8 +207,20 @@ class Rest {
 
     public static function get_album_tracks( \WP_REST_Request $request ) {
         global $wpdb;
+
         $album_id = (int) $request['id'];
-        $tracks   = $wpdb->get_results( $wpdb->prepare( "SELECT t.*, at.position, at.id AS album_track_id FROM {$wpdb->prefix}ma_album_track at JOIN {$wpdb->prefix}ma_tracks t ON t.id = at.track_id WHERE at.album_id = %d ORDER BY at.position ASC", $album_id ), ARRAY_A );
+        $album    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ma_albums WHERE id = %d", $album_id ), ARRAY_A );
+        if ( ! $album ) {
+            return rest_error( __( 'Album not found.', 'music-archiver' ), 404 );
+        }
+
+        $user_id = get_current_user_id();
+        if ( (int) $album['user_id'] !== $user_id && ! current_user_can( 'ma_manage' ) ) {
+            return rest_error( __( 'Album not found.', 'music-archiver' ), 404 );
+        }
+
+        $tracks = $wpdb->get_results( $wpdb->prepare( "SELECT t.*, at.position, at.id AS album_track_id FROM {$wpdb->prefix}ma_album_track at JOIN {$wpdb->prefix}ma_tracks t ON t.id = at.track_id WHERE at.album_id = %d ORDER BY at.position ASC", $album_id ), ARRAY_A );
+
         return rest_success( [ 'tracks' => $tracks ] );
     }
 
@@ -230,9 +242,37 @@ class Rest {
             }
         }
 
-        $title        = sanitize_text_field( $request->get_param( 'title' ) );
-        $source_url   = esc_url_raw( $request->get_param( 'source_url' ) );
+        $title = sanitize_text_field( $request->get_param( 'title' ) );
+        $title = trim( $title );
+        if ( '' === $title ) {
+            return rest_error( __( 'Track title is required.', 'music-archiver' ), 400 );
+        }
+
+        $source_url = trim( (string) $request->get_param( 'source_url' ) );
+        $source_url = $source_url ? esc_url_raw( $source_url ) : '';
         $attachment_id = (int) $request->get_param( 'attachment_id' );
+
+        $attachment_url = '';
+        if ( $attachment_id ) {
+            $attachment = get_post( $attachment_id );
+            if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+                return rest_error( __( 'Selected file not found.', 'music-archiver' ), 404 );
+            }
+
+            if ( (int) $attachment->post_author !== $user_id && ! current_user_can( 'ma_manage' ) ) {
+                return rest_error( __( 'You do not have permission to use this file.', 'music-archiver' ), 403 );
+            }
+
+            $attachment_url = wp_get_attachment_url( $attachment_id ) ?: '';
+        }
+
+        if ( ! $source_url && $attachment_url ) {
+            $source_url = esc_url_raw( $attachment_url );
+        }
+
+        if ( ! $source_url ) {
+            return rest_error( __( 'Provide an audio URL or upload a file.', 'music-archiver' ), 400 );
+        }
 
         $wpdb->insert( $wpdb->prefix . 'ma_tracks', [
             'user_id'      => $user_id,
@@ -256,7 +296,6 @@ class Rest {
 
         return rest_success( [ 'track_id' => $track_id ], 201 );
     }
-
     public static function update_album_order( \WP_REST_Request $request ) {
         global $wpdb;
         $album_id = (int) $request['id'];
@@ -418,3 +457,5 @@ class Rest {
         return rest_success( [ 'queue' => $queue ] );
     }
 }
+
+

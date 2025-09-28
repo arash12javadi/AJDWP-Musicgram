@@ -449,7 +449,17 @@ class Rest {
             $album_id = (int) substr( $source, 6 );
             $queue = $wpdb->get_results( $wpdb->prepare( "SELECT t.* FROM {$wpdb->prefix}ma_album_track at JOIN {$wpdb->prefix}ma_tracks t ON t.id = at.track_id WHERE at.album_id = %d ORDER BY at.position", $album_id ), ARRAY_A );
         } elseif ( str_starts_with( $source, 'playlist:' ) ) {
-            $queue = $wpdb->get_results( $wpdb->prepare( "SELECT t.* FROM {$wpdb->prefix}ma_playlist_items pi JOIN {$wpdb->prefix}ma_tracks t ON t.id = pi.track_id WHERE pi.playlist_id = %d ORDER BY pi.position", (int) substr( $source, 9 ) ), ARRAY_A );
+            $playlist_id = (int) substr( $source, 9 );
+            $queue = $wpdb->get_results( $wpdb->prepare( "SELECT t.* FROM {$wpdb->prefix}ma_playlist_items pi JOIN {$wpdb->prefix}ma_tracks t ON t.id = pi.track_id WHERE pi.playlist_id = %d ORDER BY pi.position", $playlist_id ), ARRAY_A );
+        } elseif ( str_starts_with( $source, 'track:' ) ) {
+            $track_id = (int) substr( $source, 6 );
+            $track    = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}ma_tracks WHERE id = %d", $track_id ), ARRAY_A );
+            if ( $track ) {
+                $owner_id = (int) $track['user_id'];
+                if ( $owner_id === get_current_user_id() || current_user_can( 'ma_manage' ) ) {
+                    $queue = [ $track ];
+                }
+            }
         }
 
         $queue = apply_filters( 'ma_player_queue', $queue, $source );

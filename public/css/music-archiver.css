@@ -322,3 +322,78 @@
 .ma-album-track-form__media-clear.is-visible {
     display: inline-block;
 }
+
+.ma-playlist {
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fff;
+}
+
+.ma-playlist__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.ma-playlist__play-all {
+    background: #0073aa;
+    color: #fff;
+    border: 0;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.ma-playlist__play-all[disabled] {
+    background: #c3c4c7;
+    color: #6c6c6c;
+    cursor: not-allowed;
+}
+
+.ma-playlist__empty {
+    margin: 0 0 1rem;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.ma-playlist__empty[hidden] {
+    display: none;
+}
+
+.ma-playlist__item {
+    align-items: center;
+    gap: 1rem;
+}
+
+.ma-playlist__item-title {
+    flex: 1 1 auto;
+}
+
+.ma-playlist__item-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.ma-playlist__item-play {
+    background: #1d2327;
+    color: #fff;
+    border: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.ma-playlist__item-play[disabled] {
+    background: #c3c4c7;
+    color: #6c6c6c;
+    cursor: not-allowed;
+}
+
+.ma-playlist__item.is-dragging {
+    opacity: 0.6;
+}
